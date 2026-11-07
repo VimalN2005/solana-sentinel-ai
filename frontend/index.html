@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solana Sentinel AI | Autonomous Agent & Security Guard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .solana-gradient {
+      background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
+    }
+    .solana-text-gradient {
+      background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card:hover {
+      border-color: rgba(153, 69, 255, 0.3);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl solana-gradient p-[2px] shadow-lg shadow-purple-500/20">
+          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-5 h-5 text-[#14F195]"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-lg tracking-tight">SOLANA SENTINEL</span>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">AI AGENT</span>
+          </div>
+          <p class="text-xs text-slate-400">Autonomous Execution & Pre-Sign Security Guard</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          SOLANA DEVNET
+        </div>
+
+        <button onclick="requestAirdrop()" id="airdrop-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition border border-slate-700">
+          <i data-lucide="droplet" class="w-3.5 h-3.5 text-cyan-400"></i>
+          Claim 1 SOL Faucet
+        </button>
+
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg glass-card border-slate-800 text-xs">
+          <span class="text-slate-400 font-mono" id="header-wallet-short">Loading...</span>
+          <button onclick="copyWalletAddress()" title="Copy Address" class="text-slate-400 hover:text-white transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: TREASURY & SECURITY SIMULATOR (5 COLS) -->
+    <div class="lg:col-span-5 space-y-6">
+
+      <!-- TREASURY CARD -->
+      <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-32 h-32 rounded-full bg-purple-600/10 blur-2xl pointer-events-none"></div>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <i data-lucide="vault" class="w-4 h-4 text-purple-400"></i>
+            Agent Treasury Vault
+          </div>
+          <button onclick="refreshWallet()" class="text-slate-400 hover:text-white text-xs flex items-center gap-1 transition">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i> Sync
+          </button>
+        </div>
+
+        <div class="mb-4">
+          <div class="text-3xl font-extrabold text-white flex items-baseline gap-2">
+            <span id="wallet-balance">0.00</span>
+            <span class="text-sm font-semibold solana-text-gradient">SOL</span>
+          </div>
+          <div class="text-xs text-slate-400 mt-1 font-mono flex items-center gap-2">
+            <span class="truncate max-w-[280px]" id="wallet-pubkey-full">...</span>
+          </div>
+        </div>
+
+        <!-- SPENDING LIMITS GRID -->
+        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs">
+          <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">Single-Tx Limit</span>
+            <span class="font-bold text-slate-200 mt-0.5 block" id="limit-single">0.50 SOL</span>
+          </div>
+          <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">Daily Budget</span>
+            <span class="font-bold text-slate-200 mt-0.5 block" id="limit-daily">2.00 SOL</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRE-SIGN SECURITY AUDITOR PANEL -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-[#14F195]"></i>
+            Pre-Sign Security Simulation
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">Zero Blind-Signing</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-4">Simulate on-chain execution and audit for drainers before signing.</p>
+
+        <form id="simulate-form" onsubmit="handleManualSimulate(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Recipient Solana Address</label>
+            <input type="text" id="sim-recipient" required placeholder="e.g. 8CbTYuPR4heSuwRaobezX7s8L2cPEMRweS4x48Tjxhdc"
+              class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Amount (SOL)</label>
+            <input type="number" step="0.001" id="sim-amount" required placeholder="0.05"
+              class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-500">
+          </div>
+          <button type="submit" id="sim-submit-btn" class="w-full py-2.5 rounded-xl solana-gradient text-slate-950 font-bold text-xs tracking-wide hover:opacity-95 transition shadow-lg shadow-purple-500/10">
+            Run Security Simulation
+          </button>
+        </form>
+
+        <!-- AUDIT RESULT DISPLAY -->
+        <div id="audit-output" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-300">Risk Assessment</span>
+            <span id="audit-badge" class="px-2 py-0.5 rounded text-[11px] font-bold">VERIFIED SAFE</span>
+          </div>
+
+          <!-- Risk Meter Bar -->
+          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div id="audit-progress" class="bg-emerald-400 h-full transition-all duration-500" style="width: 10%;"></div>
+          </div>
+
+          <div id="audit-findings" class="text-xs text-slate-400 space-y-1"></div>
+
+          <button id="audit-execute-btn" onclick="executeCurrentAudit()" class="w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition">
+            Confirm & Broadcast to Devnet
+          </button>
+        </div>
+      </div>
+
+      <!-- TRANSACTION HISTORY -->
+      <div class="glass-card rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <i data-lucide="history" class="w-4 h-4 text-cyan-400"></i>
+            On-Chain Activity
+          </div>
+          <span class="text-xs text-slate-500 font-mono">Devnet</span>
+        </div>
+        <div id="tx-history-list" class="space-y-2 max-h-48 overflow-y-auto text-xs pr-1">
+          <div class="text-slate-500 text-center py-4">No recent transactions recorded.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: AI AGENT CONVERSATION (7 COLS) -->
+    <div class="lg:col-span-7 flex flex-col glass-card rounded-2xl overflow-hidden h-[750px]">
+      
+      <!-- CHAT HEADER -->
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/40">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+            <i data-lucide="bot" class="w-4 h-4 text-purple-400"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-white">Sentinel Agent</h2>
+            <div class="flex items-center gap-1.5 text-[11px] text-emerald-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Autonomous Tool Executor Online
+            </div>
+          </div>
+        </div>
+        <button onclick="clearChat()" class="text-slate-500 hover:text-slate-300 text-xs">Clear</button>
+      </div>
+
+      <!-- CHAT MESSAGE FEED -->
+      <div id="chat-feed" class="flex-1 p-5 overflow-y-auto space-y-4">
+        <!-- Welcome Message -->
+        <div class="flex gap-3">
+          <div class="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex-shrink-0 flex items-center justify-center">
+            <i data-lucide="bot" class="w-3.5 h-3.5 text-purple-400"></i>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-300 leading-relaxed max-w-[85%] space-y-2">
+            <p>👋 Hello! I am <strong>Solana Sentinel</strong>, your autonomous agent for machine payments and pre-sign security auditing.</p>
+            <p>You can talk to me in natural language. Try one of the quick actions below, or ask me to inspect a transaction!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK PROMPT PILLS -->
+      <div class="px-5 py-2 border-t border-slate-800/60 bg-slate-950/40 flex items-center gap-2 overflow-x-auto text-[11px] no-scrollbar">
+        <button onclick="sendQuickPrompt('What is my current balance and address?')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition border border-slate-700/60">
+          💰 Check Balance
+        </button>
+        <button onclick="sendQuickPrompt('Request 1 SOL from devnet faucet')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition border border-slate-700/60">
+          🚰 Claim Faucet
+        </button>
+        <button onclick="sendQuickPrompt('Set single transfer limit to 0.25 SOL')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition border border-slate-700/60">
+          ⚙️ Set Spending Limit
+        </button>
+      </div>
+
+      <!-- CHAT INPUT FORM -->
+      <form id="chat-form" onsubmit="handleChatSubmit(event)" class="p-4 border-t border-slate-800 bg-slate-900/50 flex gap-2">
+        <input type="text" id="chat-input" placeholder="Type a command (e.g. 'Send 0.05 SOL to [address]' or 'Check balance')..."
+          class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-purple-500 font-mono">
+        <button type="submit" class="px-4 py-2.5 rounded-xl solana-gradient text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:opacity-95 transition">
+          <span>Send</span>
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+        </button>
+      </form>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentWallet = null;
+    let pendingAudit = null;
+
+    // Initialize icons and wallet
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      refreshWallet();
+      refreshTransactions();
+    });
+
+    async function refreshWallet() {
+      try {
+        const res = await fetch("/api/wallet");
+        const data = await res.json();
+        currentWallet = data;
+
+        document.getElementById("wallet-balance").innerText = data.balance_sol.toFixed(4);
+        document.getElementById("wallet-pubkey-full").innerText = data.public_key;
+        document.getElementById("header-wallet-short").innerText = `${data.public_key.slice(0, 4)}...${data.public_key.slice(-4)}`;
+        document.getElementById("limit-single").innerText = `${data.single_limit.toFixed(2)} SOL`;
+        document.getElementById("limit-daily").innerText = `${data.daily_limit.toFixed(2)} SOL`;
+      } catch (e) {
+        console.error("Failed to load wallet", e);
+      }
+    }
+
+    async function refreshTransactions() {
+      try {
+        const res = await fetch("/api/transactions");
+        const list = await res.json();
+        const container = document.getElementById("tx-history-list");
+        if (list.length === 0) {
+          container.innerHTML = '<div class="text-slate-500 text-center py-4">No recent transactions recorded.</div>';
+          return;
+        }
+
+        container.innerHTML = list.map(tx => `
+          <div class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-mono text-slate-300 font-medium">${tx.amount_sol} SOL &rarr; ${tx.recipient.slice(0, 4)}...${tx.recipient.slice(-4)}</div>
+              <div class="text-[10px] text-slate-500 font-mono truncate max-w-[200px]">${tx.signature.slice(0, 16)}...</div>
+            </div>
+            <a href="${tx.explorer_url}" target="_blank" class="px-2 py-1 rounded bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 text-[10px] font-mono transition flex items-center gap-1">
+              Explorer <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (e) {
+        console.error("Failed to load transactions", e);
+      }
+    }
+
+    async function requestAirdrop() {
+      const btn = document.getElementById("airdrop-btn");
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Requesting...`;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch("/api/faucet?amount=1.0", { method: "POST" });
+        const data = await res.json();
+        appendAgentMessage(data.message);
+        setTimeout(refreshWallet, 2000);
+      } catch (e) {
+        appendAgentMessage("Error requesting airdrop: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="droplet" class="w-3.5 h-3.5 text-cyan-400"></i> Claim 1 SOL Faucet`;
+        lucide.createIcons();
+      }
+    }
+
+    function copyWalletAddress() {
+      if (currentWallet) {
+        navigator.clipboard.writeText(currentWallet.public_key);
+        alert("Wallet address copied to clipboard!");
+      }
+    }
+
+    async function handleManualSimulate(e) {
+      e.preventDefault();
+      const recipient = document.getElementById("sim-recipient").value.trim();
+      const amount = parseFloat(document.getElementById("sim-amount").value);
+
+      const btn = document.getElementById("sim-submit-btn");
+      btn.innerText = "Simulating on Devnet...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/simulate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recipient, amount_sol: amount })
+        });
+        const audit = await res.json();
+        renderAuditOutput(audit);
+      } catch (e) {
+        alert("Simulation failed: " + e.message);
+      } finally {
+        btn.innerText = "Run Security Simulation";
+        btn.disabled = false;
+      }
+    }
+
+    function renderAuditOutput(audit) {
+      pendingAudit = audit;
+      const out = document.getElementById("audit-output");
+      out.classList.remove("hidden");
+
+      const badge = document.getElementById("audit-badge");
+      const progress = document.getElementById("audit-progress");
+      const findings = document.getElementById("audit-findings");
+      const execBtn = document.getElementById("audit-execute-btn");
+
+      badge.innerText = audit.risk_level.replace("_", " ");
+      progress.style.width = `${audit.risk_score}%`;
+
+      if (audit.risk_score <= 30) {
+        badge.className = "px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        progress.className = "bg-emerald-400 h-full transition-all duration-500";
+      } else if (audit.risk_score <= 65) {
+        badge.className = "px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+        progress.className = "bg-amber-400 h-full transition-all duration-500";
+      } else {
+        badge.className = "px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+        progress.className = "bg-rose-400 h-full transition-all duration-500";
+      }
+
+      findings.innerHTML = audit.risk_flags.length > 0 
+        ? audit.risk_flags.map(f => `<div class="flex items-start gap-1.5"><span class="text-amber-400">&bull;</span> ${f}</div>`).join('')
+        : '<div class="text-emerald-400 flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5"></i> All policy & simulation checks passed cleanly.</div>';
+
+      execBtn.disabled = !audit.safe;
+      execBtn.className = audit.safe 
+        ? "w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-emerald-500/10"
+        : "w-full py-2 rounded-xl bg-slate-800 text-slate-500 font-bold text-xs cursor-not-allowed";
+
+      lucide.createIcons();
+    }
+
+    async function executeCurrentAudit() {
+      if (!pendingAudit || !pendingAudit.safe) return;
+      const btn = document.getElementById("audit-execute-btn");
+      btn.innerText = "Broadcasting to Devnet...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recipient: pendingAudit.recipient, amount_sol: pendingAudit.amount_sol })
+        });
+        const data = await res.json();
+        if (data.success) {
+          appendAgentMessage(`✅ **Transfer Complete!**\n\nSent **${data.amount_sol} SOL** to \`${data.recipient}\`.\n\n[View on Solana Explorer](${data.explorer_url})`);
+          refreshWallet();
+          refreshTransactions();
+          document.getElementById("audit-output").classList.add("hidden");
+        } else {
+          appendAgentMessage(`❌ **Transfer Failed:** ${data.error}`);
+        }
+      } catch (e) {
+        appendAgentMessage("Execution error: " + e.message);
+      } finally {
+        btn.innerText = "Confirm & Broadcast to Devnet";
+        btn.disabled = false;
+      }
+    }
+
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById("chat-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      appendUserMessage(msg);
+      input.value = "";
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        appendAgentMessage(data.reply, data);
+        if (data.type === "BALANCE_INFO" || data.type === "AIRDROP_SUCCESS" || data.type === "LIMIT_UPDATED") {
+          refreshWallet();
+        }
+      } catch (e) {
+        appendAgentMessage("Error contacting agent: " + e.message);
+      }
+    }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById("chat-input").value = promptText;
+      document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+    }
+
+    function appendUserMessage(text) {
+      const feed = document.getElementById("chat-feed");
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "flex justify-end";
+      msgDiv.innerHTML = `
+        <div class="bg-purple-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 text-xs max-w-[80%] leading-relaxed">
+          ${escapeHtml(text)}
+        </div>
+      `;
+      feed.appendChild(msgDiv);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function appendAgentMessage(markdownText, data = null) {
+      const feed = document.getElementById("chat-feed");
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "flex gap-3";
+      
+      let htmlContent = formatSimpleMarkdown(markdownText);
+
+      // If this was an audit result, add a direct action button
+      if (data && data.type === "AUDIT_RESULT" && data.data && data.data.audit.safe) {
+        htmlContent += `
+          <div class="mt-3 pt-2 border-t border-slate-800">
+            <button onclick="triggerQuickTransfer('${data.data.recipient}', ${data.data.amount})" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition">
+              Broadcast ${data.data.amount} SOL Now
+            </button>
+          </div>
+        `;
+      }
+
+      msgDiv.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex-shrink-0 flex items-center justify-center">
+          <i data-lucide="bot" class="w-3.5 h-3.5 text-purple-400"></i>
+        </div>
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-300 leading-relaxed max-w-[85%] space-y-2">
+          ${htmlContent}
+        </div>
+      `;
+      feed.appendChild(msgDiv);
+      feed.scrollTop = feed.scrollHeight;
+      lucide.createIcons();
+    }
+
+    async function triggerQuickTransfer(recipient, amount) {
+      try {
+        const res = await fetch("/api/transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recipient, amount_sol: amount })
+        });
+        const data = await res.json();
+        if (data.success) {
+          appendAgentMessage(`✅ **Transfer Complete!**\n\n[View on Solana Explorer](${data.explorer_url})`);
+          refreshWallet();
+          refreshTransactions();
+        } else {
+          appendAgentMessage(`❌ **Transfer Failed:** ${data.error}`);
+        }
+      } catch (e) {
+        appendAgentMessage("Transfer error: " + e.message);
+      }
+    }
+
+    function clearChat() {
+      document.getElementById("chat-feed").innerHTML = "";
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function formatSimpleMarkdown(text) {
+      return text
+        .replace(/### (.*?)\n/g, '<h3 class="font-bold text-white text-xs mb-1">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+        .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-slate-950 font-mono text-purple-300">$1</code>')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-[#14F195] hover:underline font-mono inline-flex items-center gap-0.5">$1</a>')
+        .replace(/\n\n/g, '</p><p class="mt-2">')
+        .replace(/\n/g, '<br>');
+    }
+  </script>
+</body>
+</html>

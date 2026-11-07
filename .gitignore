@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Sensitive Wallet Data
+backend/wallet.json
+backend/tx_history.json
+
+# System
+.DS_Store
+Thumbs.db
